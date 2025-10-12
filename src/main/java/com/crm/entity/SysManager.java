@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * @author alani
+ */
 @Getter
 @Setter
 @TableName("sys_manager")
@@ -40,4 +43,7 @@ public class SysManager {
 
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
+
+
 }
