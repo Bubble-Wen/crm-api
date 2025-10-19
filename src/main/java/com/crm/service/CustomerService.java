@@ -1,7 +1,11 @@
 package com.crm.service;
 
+import com.crm.common.result.PageResult;
 import com.crm.entity.Customer;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.crm.query.CustomerQuery;
+import com.crm.vo.CustomerVO;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * <p>
@@ -13,4 +17,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface CustomerService extends IService<Customer> {
 
+    PageResult<CustomerVO> getPage(CustomerQuery query);
+
+    void exportCustomer(CustomerQuery query, HttpServletResponse httpResource);
+
+    void saveOrUpdate(CustomerVO customerVO);
 }

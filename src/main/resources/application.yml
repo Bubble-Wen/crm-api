@@ -75,4 +75,6 @@ auth:
     - /swagger-ui/**
     - /doc.html
     - /
-    - /department/** # 根路径
+    - /department/**
+    - /customer/**
+    # 根路径
