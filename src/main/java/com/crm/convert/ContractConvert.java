@@ -1,6 +1,5 @@
 package com.crm.convert;
 
-
 import com.crm.entity.Contract;
 import com.crm.entity.ContractProduct;
 import com.crm.vo.ContractVO;
@@ -14,7 +13,7 @@ import java.util.List;
 public interface ContractConvert {
     ContractConvert INSTANCE = Mappers.getMapper(ContractConvert.class);
 
-    Contract convert(ContractVO contract);
+    Contract convert(ContractVO contractVO);
 
     ProductVO convertToProductVO(ContractProduct contractProduct);
 

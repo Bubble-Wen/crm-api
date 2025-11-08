@@ -16,15 +16,15 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.crm.utils.ExcelUtils;
 import com.crm.vo.CustomerVO;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
-import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author crm
@@ -35,46 +35,39 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
 
     @Override
     public PageResult<CustomerVO> getPage(CustomerQuery query) {
+
 //        1、声明分页参数
         Page<CustomerVO> page = new Page<>(query.getPage(), query.getLimit());
-        MPJLambdaWrapper<Customer> wrapper = selection(query);
+        MPJLambdaWrapper<Customer> wrapper = selectCondition(query);
         Page<CustomerVO> result = baseMapper.selectJoinPage(page, CustomerVO.class, wrapper);
 
-        return new PageResult<>(result.getRecords(), result.getTotal());
-    }
-
-    @Override
-    public void exportCustomer(CustomerQuery query, HttpServletResponse httpResource) {
-        MPJLambdaWrapper<Customer> wrapper = new MPJLambdaWrapper<>();
-        List<Customer> customerList = baseMapper.selectJoinList(Customer.class, wrapper);
-        ExcelUtils.writeExcel(httpResource, customerList, "客户信息", "客户信息", CustomerVO.class);
+        return new PageResult<>(result.getRecords(), page.getTotal());
     }
 
     @Override
     public void saveOrUpdate(CustomerVO customerVO) {
         LambdaQueryWrapper<Customer> wrapper = new LambdaQueryWrapper<Customer>().eq(Customer::getPhone, customerVO.getPhone());
-
         if (customerVO.getId() == null) {
+//            1、判断手机号信息是否已经存在
             Customer customer = baseMapper.selectOne(wrapper);
             if (customer != null) {
-                throw new ServerException("该手机号客户已存在，请勿重复添加");
+                throw new ServerException("该手机号客户已经存在，请勿重复添加客户信息");
             }
 
-            Customer convert = CustomerConvert.getInstance().convert(customerVO);
+            Customer convertCustomer = CustomerConvert.INSTANCE.convert(customerVO);
+//            2、获取新增的管理员信息
             Integer managerId = SecurityUser.getManagerId();
-            convert.setCreaterId(managerId);
-            convert.setOwnerId(managerId);
-            baseMapper.insert(convert);
-        }else {
+            convertCustomer.setCreaterId(managerId);
+            convertCustomer.setOwnerId(managerId);
+            baseMapper.insert(convertCustomer);
+        } else {
             wrapper.ne(Customer::getId, customerVO.getId());
-
             Customer customer = baseMapper.selectOne(wrapper);
             if (customer != null) {
-                throw new ServerException("该手机号客户已存在，请勿重复添加");
+                throw new ServerException("该手机号客户已经存在，请勿重复添加客户信息");
             }
-
-            Customer convert = CustomerConvert.getInstance().convert(customerVO);
-            baseMapper.updateById(convert);
+            Customer convertCustomer = CustomerConvert.INSTANCE.convert(customerVO);
+            baseMapper.updateById(convertCustomer);
         }
     }
 
@@ -83,11 +76,19 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         removeByIds(ids);
     }
 
+
+    @Override
+    public void exportCustomer(CustomerQuery query, HttpServletResponse response) {
+        MPJLambdaWrapper<Customer> wrapper = selectCondition(query);
+        List<CustomerVO> list = baseMapper.selectJoinList(CustomerVO.class, wrapper);
+        ExcelUtils.writeExcel(response, list, "客户信息", "客户信息", CustomerVO.class);
+    }
+
     @Override
     public void customerToPublicPool(IdQuery idQuery) {
         Customer customer = baseMapper.selectById(idQuery.getId());
-        if(customer == null){
-            throw new ServerException("客户不存在,⽆法转⼊公海");
+        if (customer == null) {
+            throw new ServerException("客户不存在,无法转入公海");
         }
         customer.setIsPublic(1);
         customer.setOwnerId(null);
@@ -98,7 +99,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
     public void publicPoolToPrivate(IdQuery idQuery) {
         Customer customer = baseMapper.selectById(idQuery.getId());
         if (customer == null) {
-            throw new ServerException("客户不存在,⽆法转⼊公海");
+            throw new ServerException("客户不存在,无法转入公海");
         }
         customer.setIsPublic(0);
         Integer ownerId = SecurityUser.getManagerId();
@@ -106,7 +107,7 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
         baseMapper.updateById(customer);
     }
 
-    private MPJLambdaWrapper<Customer> selection(CustomerQuery query) {
+    private MPJLambdaWrapper<Customer> selectCondition(CustomerQuery query) {
         MPJLambdaWrapper<Customer> wrapper = new MPJLambdaWrapper<>();
 //        2、构建查询关系
         wrapper.selectAll(Customer.class)
@@ -114,34 +115,27 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer> i
                 .selectAs("c", SysManager::getAccount, CustomerVO::getCreaterName)
                 .leftJoin(SysManager.class, "o", SysManager::getId, Customer::getOwnerId)
                 .leftJoin(SysManager.class, "c", SysManager::getId, Customer::getCreaterId);
-
-//        3、构建搜索字段
+//        3、构建查询条件
         if (StringUtils.isNotBlank(query.getName())) {
             wrapper.like(Customer::getName, query.getName());
         }
-
         if (StringUtils.isNotBlank(query.getPhone())) {
             wrapper.like(Customer::getPhone, query.getPhone());
         }
-
         if (query.getLevel() != null) {
             wrapper.eq(Customer::getLevel, query.getLevel());
         }
-
         if (query.getSource() != null) {
             wrapper.eq(Customer::getSource, query.getSource());
         }
-
         if (query.getFollowStatus() != null) {
             wrapper.eq(Customer::getFollowStatus, query.getFollowStatus());
         }
-
         if (query.getIsPublic() != null) {
             wrapper.eq(Customer::getIsPublic, query.getIsPublic());
         }
-
-//        4、构建列表排序
         wrapper.orderByDesc(Customer::getCreateTime);
+
         return wrapper;
     }
 }

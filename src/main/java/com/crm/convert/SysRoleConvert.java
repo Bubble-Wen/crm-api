@@ -15,7 +15,7 @@ public interface SysRoleConvert {
     SysRoleVO convert(SysRole entity);
 
     SysRole convert(SysRoleVO vo);
-    
+
     List<SysRoleVO> convertList(List<SysRole> list);
 
 }
