@@ -14,10 +14,14 @@ import com.crm.mapper.ContractMapper;
 import com.crm.mapper.ContractProductMapper;
 import com.crm.mapper.ProductMapper;
 import com.crm.query.ContractQuery;
+import com.crm.query.ContractTrendQuery;
 import com.crm.security.user.SecurityUser;
 import com.crm.service.ContractService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.crm.utils.DateUtils;
+import com.crm.vo.ContractTrendPieVO;
 import com.crm.vo.ContractVO;
+import com.crm.vo.CustomerTrendVO;
 import com.crm.vo.ProductVO;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.AllArgsConstructor;
@@ -26,7 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.crm.utils.NumberUtils.generateContractNumber;
 
@@ -220,5 +227,25 @@ public class ContractServiceImpl extends ServiceImpl<ContractMapper, Contract> i
         product.setStock(product.getStock() - count);
         product.setSales(product.getSales() + count);
         productMapper.updateById(product);
+    }
+
+    @Override
+    public List<ContractTrendPieVO> getContractStatusPieData() {
+        // 获取当前登录用户ID，确保数据权限
+        Integer managerId = SecurityUser.getManagerId();
+        // 调用Mapper方法按状态统计数量（传入用户ID）
+        List<ContractTrendPieVO> pieData = baseMapper.countByStatus(managerId);
+
+        // 计算总数量和占比（基于数量计算）
+        int total = pieData.stream()
+                .mapToInt(ContractTrendPieVO::getCount)
+                .sum();
+
+        pieData.forEach(item -> {
+            // 计算占比（数量/总数量*100）
+            item.setProportion(total > 0 ? (double) item.getCount() / total * 100 : 0);
+        });
+
+        return pieData;
     }
 }

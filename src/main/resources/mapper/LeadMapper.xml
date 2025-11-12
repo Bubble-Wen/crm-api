@@ -21,4 +21,19 @@
         <result column="update_time" property="updateTime" />
     </resultMap>
 
+    <!-- 根据创建时间范围统计线索数量 -->
+    <select id="countByCreateTime" resultType="int">
+        SELECT COUNT(*)
+        FROM lead
+        <where>
+            <if test="startTime != null and startTime != ''">
+                AND create_time >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND create_time <![CDATA[ <= ]]> #{endTime}
+            </if>
+        </where>
+    </select>
+
+
 </mapper>
