@@ -23,7 +23,6 @@
         <result column="end_time" property="endTime" />
     </resultMap>
 
-
     <select id="countByStatus" resultType="com.crm.vo.ContractTrendPieVO">
         SELECT
             status,
@@ -51,11 +50,4 @@
     </select>
 
 
-    <select id="countByStatusAndDate" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM t_contract
-        WHERE owner_id = #{managerId}
-          AND delete_flag = 0
-          AND DATE(update_time) = #{date}
-          AND status = #{status}
-    </select>
 </mapper>

@@ -5,34 +5,8 @@ spring:
     active: dev
   mvc:
     path-match:
-      matching-strategy: ant_path_matcher # 解决路径匹配问题
-  # 数据库配置（归到 spring 下，正确缩进）
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/crm_db?useSSL=false&allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: 123456
-  # Redis配置（归到 spring 下，正确缩进）
-  data:
-    redis:
-      host: 127.0.0.1
-      port: 6379
-      password:   # 无密码留空即可
-  # 邮件配置（关键：归到 spring 下，层级正确）
-  mail:
-    host: smtp.qq.com
-    port: 587
-    username: 2933128731@qq.com  # 发送者QQ邮箱
-    password: nbsifsoabmpldeab   # QQ邮箱SMTP授权码（不是登录密码）
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
+      matching-strategy: ant_path_matcher #解决
 
-# mybatis-plus配置（保持不变）
 mybatis-plus:
   mapper-locations: classpath:/mapper/*Mapper.xml
   type-aliases-package: com.crm.*.entity
@@ -42,21 +16,19 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      logic-delete-field: true # 全局逻辑删除字段名（since 3.3.0）
-      logic-delete-value: 1 # 逻辑已删除值（默认1）
-      logic-not-delete-value: 0 # 逻辑未删除值（默认0）
+      logic-delete-field: true # 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
 
-# 服务器配置（保持不变）
 server:
   port: 8081
   servlet:
     context-path: /crm-api
 
-# 日志配置（保持不变）
 logging:
   config: classpath:log/logback-spring.xml
 
-# springdoc-openapi配置（保持不变）
+# springdoc-openapi项目配置
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -69,17 +41,28 @@ springdoc:
       paths-to-match: '/**'
       packages-to-scan: com.crm.controller
 
-# knife4j配置（修复缩进，独立于spring）
+# knife4j的增强配置，不需要增强可以不配
 knife4j:
   enable: true
-  setting:
-    language: zh-CN # 修复缩进：归到 setting 下
-  basic:
-    enable: true    # 开启密码模式
-    username: admin # 登录用户名
-    password: 123456 # 登录密码
+  setting:spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/crm_db?useSSL=false&allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: Soft_root
 
-# 权限忽略路径（保持不变）
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:   # 如果没有密码，可以不写或写成空字符串
+
+    language: zh-CN
+  basic:
+    enable: true    #开启密码模式
+    username: admin   #用户名
+    password: 123456  #密码
+
 auth:
   ignore_urls:
     - /sys/auth/**
@@ -97,11 +80,15 @@ auth:
     - /product/**
     - /common/**
     - /contract/**
+    # 根路径
 
-# 阿里云OSS配置（保持不变）
 aliyun:
   oss:
+    # oss对外服务的访问域名
     endpoint: oss-cn-hangzhou.aliyuncs.com
+    # 访问身份验证中用到用户标识（使用环境变量占位符）
     accessKeyId: LTAI5tFqmkULcnBCrU22kkyj
+    # 用户用于加密签名字符串和oss用来验证签名字符串的密钥（使用环境变量占位符）
     accessKeySecret: sEkf0RCJiFxCiINX1S2T2ohlNL2Cic
+    # oss的存储空间
     bucketName: infinityx7-oss0
