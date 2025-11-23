@@ -2,6 +2,8 @@ package com.crm.mapper;
 
 import com.crm.entity.Opportunity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.crm.entity.OpportunityFollow;
+import com.crm.vo.OpportunityFollowVO;
 
 /**
  * <p>
